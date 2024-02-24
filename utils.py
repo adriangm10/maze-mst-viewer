@@ -1,8 +1,9 @@
-from enum import Enum
 from random import randint
 from typing import Callable
 
 import pygame
+
+from algs import Algorithms, Boruvka, Kruskal, Prim
 
 
 def generate_grid_graph(
@@ -30,22 +31,6 @@ def generate_grid_graph(
     return graph
 
 
-def get_graph_edges(graph: list[list[int]]) -> list[tuple[int, int, int]]:
-    edges = []
-    for i in range(len(graph)):
-        for j in range(i, len(graph[i])):
-            if graph[i][j]:
-                edges.append((i, j, graph[i][j]))
-
-    return edges
-
-
-class Algorithms(Enum):
-    PRIM = 0
-    KRUSKAL = 1
-    BORUVKA = 2
-
-
 class Maze:
     def __init__(
         self,
@@ -63,194 +48,60 @@ class Maze:
         )
         self.rect = rect
         self.color = color
-        self.generation_mode = Algorithms.KRUSKAL
+        self.generation_mode = Algorithms.PRIM
 
-        # KRUSKAL
-        self.edges = get_graph_edges(self.grid_graph)
-        self.edges.sort(key=lambda edge: edge[2])
-        self.sets = list(range(len(self.grid_graph)))
-        self.replace_set = None
-        self.edge = 0
-        self.selected_edges: list[tuple[int, int, int]] = []
+        self.prim: Prim | None = Prim(self.grid_graph)
+        self.boruvka: Boruvka | None = None
+        self.kruskal: Kruskal | None = None
 
-        # PRIM
-        self.root = randint(0, len(self.grid_graph) - 1)
-        self.cost = [i if i else self.max_cost + 1 for i in self.grid_graph[self.root]]
-        self.parents = [self.root if i else None for i in self.grid_graph[self.root]]
-        self.q = [False] * len(self.grid_graph)
-        self.q[self.root] = True
-        self.parents[self.root] = self.root
-        self.prim_walls = 0
-
-        # BORUVKA
-        self.components = list(range(len(self.grid_graph)))
-        self.component_count = len(self.components)
-        self.rank = [0] * len(self.grid_graph)
-        self.cheapest = [None] * len(self.grid_graph)
-        self.boruvka_walls: list[tuple[int, int, int]] = []
-        self.curr_comp = 0
-        self.boruvka_end = False
-
-    def __prim_wall(self):
-        v = self.cost.index(min(self.cost))
-        self.cost[v] = self.max_cost + 1
-        self.q[v] = True
-        self.prim_walls += 1
-
-        for n in range(len(self.grid_graph[v])):
-            if (
-                self.grid_graph[v][n] < self.cost[n]
-                and not self.q[n]
-                and self.grid_graph[v][n]
-            ):
-                self.parents[n] = v
-                self.cost[n] = self.grid_graph[v][n]
-
-    def __union(self, union_set, child_set):
-        for i in range(len(self.sets)):
-            if self.sets[i] == child_set:
-                self.sets[i] = union_set
-
-    def __kruskal_wall(self):
-        while self.edge < len(self.edges):
-            edge = self.edges[self.edge]
-            if self.sets[edge[0]] != self.sets[edge[1]]:
-                self.replace_set = self.sets[edge[1]]
-                self.__union(self.sets[edge[0]], self.sets[edge[1]])
-                self.selected_edges.append(edge)
-                self.edge += 1
-                break
-
-            self.edge += 1
-
-    def __boruvka_wall(self):
-        if self.curr_comp == self.component_count:
-            self.cheapest = [None] * self.component_count
-            self.curr_comp = 0
-
-            for v, w, c in self.edges:
-                componentv = self.components[v]
-                componentw = self.components[w]
-
-                if componentv == componentw:
-                    continue
-
-                if (
-                    self.cheapest[componentv] is None
-                    or self.cheapest[componentv][2] > c
-                ):
-                    self.cheapest[componentv] = (v, w, c)
-
-                if (
-                    self.cheapest[componentw] is None
-                    or self.cheapest[componentw][2] > c
-                ):
-                    self.cheapest[componentw] = (v, w, c)
-
-            if all([i is None for i in self.cheapest]):
-                self.boruvka_end = True
-                return
-
-        while self.cheapest[self.curr_comp] is None:
-            self.curr_comp += 1
-            if self.curr_comp == self.component_count:
-                return
-
-        v, w, c = self.cheapest[self.curr_comp]
-        self.boruvka_walls.append((v, w, c))
-        componentv = self.components[v]
-        componentw = self.components[w]
-
-        if self.rank[componentv] > self.rank[componentw]:
-            for i in range(len(self.components)):
-                self.components[i] = (
-                    componentv
-                    if self.components[i] == componentw
-                    else self.components[i]
-                )
-
-        elif self.rank[componentw] > self.rank[componentv]:
-            for i in range(len(self.components)):
-                self.components[i] = (
-                    componentw
-                    if self.components[i] == componentv
-                    else self.components[i]
-                )
-        else:
-            for i in range(len(self.components)):
-                self.components[i] = (
-                    componentv
-                    if self.components[i] == componentw
-                    else self.components[i]
-                )
-            self.rank[componentv] += 1
-
-        self.curr_comp += 1
+    def set_generation_mode(self, alg: Algorithms):
+        self.generation_mode = alg
+        match alg:
+            case Algorithms.PRIM:
+                if self.prim is None:
+                    self.prim = Prim(self.grid_graph)
+            case Algorithms.KRUSKAL:
+                if self.kruskal is None:
+                    self.kruskal = Kruskal(self.grid_graph)
+            case Algorithms.BORUVKA:
+                if self.boruvka is None:
+                    self.boruvka = Boruvka(self.grid_graph)
 
     def new_wall(self):
         match self.generation_mode:
             case Algorithms.PRIM:
-                self.__prim_wall()
+                self.prim.new_wall()
             case Algorithms.KRUSKAL:
-                self.__kruskal_wall()
+                self.kruskal.new_wall()
             case Algorithms.BORUVKA:
-                self.__boruvka_wall()
+                self.boruvka.new_wall()
 
     def is_fully_created(self) -> bool:
         match self.generation_mode:
             case Algorithms.PRIM:
-                return self.prim_walls == len(self.grid_graph)
+                return self.prim.finished() if self.prim is not None else False
             case Algorithms.KRUSKAL:
-                return len(self.selected_edges) == len(self.grid_graph) - 1
+                return self.kruskal.finished() if self.kruskal is not None else False
             case Algorithms.BORUVKA:
-                return self.boruvka_end
-
-    def __draw_prim(self, surface: pygame.Surface):
-        for i, v in enumerate(self.parents):
-            if v is None or not self.q[i]:
-                continue
-            from_node = (
-                v % self.xcell_count * self.cell_size + self.rect.x,
-                v // self.xcell_count * self.cell_size + self.rect.y,
-            )
-            to_node = (
-                i % self.xcell_count * self.cell_size + self.rect.x,
-                i // self.xcell_count * self.cell_size + self.rect.y,
-            )
-            pygame.draw.line(surface, self.color, from_node, to_node)
-
-    def __draw_kruskal(self, surface: pygame.Surface):
-        for i in self.selected_edges:
-            from_node = (
-                i[0] % self.xcell_count * self.cell_size + self.rect.x,
-                i[0] // self.xcell_count * self.cell_size + self.rect.y,
-            )
-            to_node = (
-                i[1] % self.xcell_count * self.cell_size + self.rect.x,
-                i[1] // self.xcell_count * self.cell_size + self.rect.y,
-            )
-            pygame.draw.line(surface, self.color, from_node, to_node)
-
-    def __draw_boruvka(self, surface: pygame.Surface):
-        for i in self.boruvka_walls:
-            from_node = (
-                i[0] % self.xcell_count * self.cell_size + self.rect.x,
-                i[0] // self.xcell_count * self.cell_size + self.rect.y,
-            )
-            to_node = (
-                i[1] % self.xcell_count * self.cell_size + self.rect.x,
-                i[1] // self.xcell_count * self.cell_size + self.rect.y,
-            )
-            pygame.draw.line(surface, self.color, from_node, to_node)
+                return self.boruvka.finished() if self.boruvka is not None else False
 
     def draw_maze(self, surface: pygame.Surface):
         match self.generation_mode:
             case Algorithms.PRIM:
-                self.__draw_prim(surface)
+                if self.prim is not None:
+                    self.prim.draw(
+                        surface, self.xcell_count, self.cell_size, self.rect, self.color
+                    )
             case Algorithms.KRUSKAL:
-                self.__draw_kruskal(surface)
+                if self.kruskal is not None:
+                    self.kruskal.draw(
+                        surface, self.xcell_count, self.cell_size, self.rect, self.color
+                    )
             case Algorithms.BORUVKA:
-                self.__draw_boruvka(surface)
+                if self.boruvka is not None:
+                    self.boruvka.draw(
+                        surface, self.xcell_count, self.cell_size, self.rect, self.color
+                    )
 
     def draw_grid(self, surface: pygame.Surface):
         for i, node in enumerate(self.grid_graph):
@@ -282,28 +133,14 @@ class Maze:
     def restart(self):
         match self.generation_mode:
             case Algorithms.PRIM:
-                self.root = randint(0, len(self.grid_graph) - 1)
-                self.cost = [
-                    i if i else self.max_cost + 1 for i in self.grid_graph[self.root]
-                ]
-                self.parents = [
-                    self.root if i else None for i in self.grid_graph[self.root]
-                ]
-                self.q = [False] * len(self.grid_graph)
-                self.q[self.root] = True
-                self.parents[self.root] = self.root
-                self.prim_walls = 0
+                if self.prim is not None:
+                    self.prim.restart()
             case Algorithms.KRUSKAL:
-                self.sets = list(range(len(self.grid_graph)))
-                self.replace_set = None
-                self.edge = 0
-                self.selected_edges = []
+                if self.kruskal is not None:
+                    self.kruskal.restart()
             case Algorithms.BORUVKA:
-                self.boruvka_end = False
-                self.boruvka_walls = []
-                self.cheapest = [None] * len(self.components)
-                self.component_count = len(self.components)
-                self.components = list(range(len(self.grid_graph)))
+                if self.boruvka is not None:
+                    self.boruvka.restart()
 
 
 class Button:

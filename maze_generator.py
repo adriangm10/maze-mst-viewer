@@ -17,24 +17,53 @@ pygame.display.set_caption("maze_generator")
 
 arial = pygame.font.SysFont("arial", 14)
 
-def make_pause(button: Button):
+
+def pause_continue(button: Button):
     global pause
     pause = not pause
     button.label = "Pause" if not pause else "Continue"
 
+
 def restart_maze(maze: Maze):
     maze.restart()
 
+
 def change_generation_alg(maze: Maze, alg: Algorithms):
-    maze.generation_mode = alg
+    maze.set_generation_mode(alg)
+
 
 if __name__ == "__main__":
     running = True
-    kruskal_button = Button(pygame.Rect(WIDTH / 2 - 300, 600, 100, 25), arial, label="Kruskal", onClick=change_generation_alg)
-    prim_button = Button(pygame.Rect(WIDTH / 2 - 150, 600, 100, 25), arial, label="Prim", onClick=change_generation_alg)
-    boruvka_button = Button(pygame.Rect(WIDTH / 2 - 150, 700, 100, 25), arial, label="Boruvka", onClick=change_generation_alg)
-    pause_button = Button(pygame.Rect(WIDTH / 2 + 50, 600, 100, 25), arial, label="Pause", onClick=make_pause)
-    restart_button = Button(pygame.Rect(WIDTH / 2 + 200, 600, 100, 25), arial, label="Restart", onClick=restart_maze)
+    kruskal_button = Button(
+        pygame.Rect(WIDTH / 2 - 300, 600, 100, 25),
+        arial,
+        label="Kruskal",
+        onClick=change_generation_alg,
+    )
+    prim_button = Button(
+        pygame.Rect(WIDTH / 2 - 150, 600, 100, 25),
+        arial,
+        label="Prim",
+        onClick=change_generation_alg,
+    )
+    boruvka_button = Button(
+        pygame.Rect(WIDTH / 2 - 150, 700, 100, 25),
+        arial,
+        label="Boruvka",
+        onClick=change_generation_alg,
+    )
+    pause_button = Button(
+        pygame.Rect(WIDTH / 2 + 50, 600, 100, 25),
+        arial,
+        label="Pause",
+        onClick=pause_continue,
+    )
+    restart_button = Button(
+        pygame.Rect(WIDTH / 2 + 200, 600, 100, 25),
+        arial,
+        label="Restart",
+        onClick=restart_maze,
+    )
     maze = Maze(pygame.Rect(10, 10, WIDTH - 20, 500), 20, max_cost=1000)
 
     while running:
