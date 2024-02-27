@@ -52,6 +52,12 @@ if __name__ == "__main__":
         label="Boruvka",
         onClick=change_generation_alg,
     )
+    prim_maze_button = Button(
+        pygame.Rect(WIDTH / 2 - 300, 700, 100, 25),
+        arial,
+        label="Prim Maze",
+        onClick=change_generation_alg,
+    )
     pause_button = Button(
         pygame.Rect(WIDTH / 2 + 50, 600, 100, 25),
         arial,
@@ -80,6 +86,7 @@ if __name__ == "__main__":
         kruskal_button.process(maze, Algorithms.KRUSKAL)
         prim_button.process(maze, Algorithms.PRIM)
         boruvka_button.process(maze, Algorithms.BORUVKA)
+        prim_maze_button.process(maze, Algorithms.PRIM_MAZE)
 
         maze.draw_maze(window)
         pause_button.draw(window)
@@ -87,6 +94,7 @@ if __name__ == "__main__":
         kruskal_button.draw(window)
         boruvka_button.draw(window)
         prim_button.draw(window)
+        prim_maze_button.draw(window)
         pygame.display.update()
 
         window.fill((0, 0, 0))
