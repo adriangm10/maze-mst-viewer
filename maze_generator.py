@@ -4,7 +4,8 @@ from time import sleep
 
 import pygame
 
-from utils import Algorithms, Button, Maze
+from utils import Algorithms, Button
+from maze import Maze
 
 pygame.init()
 

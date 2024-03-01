@@ -1,15 +1,7 @@
-from enum import Enum
 from math import inf
 from random import randint
 
 import pygame
-
-
-class Algorithms(Enum):
-    PRIM = 0
-    KRUSKAL = 1
-    BORUVKA = 2
-    PRIM_MAZE = 3
 
 
 def get_graph_edges(graph: list[list[int]]) -> list[tuple[int, int, int]]:
@@ -22,7 +14,27 @@ def get_graph_edges(graph: list[list[int]]) -> list[tuple[int, int, int]]:
     return edges
 
 
-class Prim:
+class Generator:
+    def finished(self):
+        raise NotImplementedError
+
+    def new_wall(self):
+        raise NotImplementedError
+
+    def reset(self):
+        raise NotImplementedError
+
+    def draw(
+        self,
+        surface: pygame.Surface,
+        xcell_count: int,
+        cell_size: int,
+        rect: pygame.Rect,
+        color: pygame.Color,
+    ):
+        raise NotImplementedError
+
+class Prim(Generator):
     def __init__(self, graph: list[list[int]]):
         self.grid_graph = graph
         self.root = randint(0, len(self.grid_graph) - 1)
@@ -82,7 +94,7 @@ class Prim:
         self.prim_walls = 0
 
 
-class Kruskal:
+class Kruskal(Generator):
     def __init__(self, graph: list[list[int]]):
         self.grid_graph = graph
         self.edges = get_graph_edges(self.grid_graph)
@@ -138,7 +150,7 @@ class Kruskal:
         self.selected_edges = []
 
 
-class Boruvka:
+class Boruvka(Generator):
     def __init__(self, graph: list[list[int]]):
         self.grid_graph = graph
         self.edges = get_graph_edges(self.grid_graph)
@@ -239,7 +251,7 @@ class Boruvka:
         self.is_finished = False
 
 
-class PrimMaze:
+class PrimMaze(Generator):
     def __init__(self, grid: list[list[int]], xnode_count: int, ynode_count: int):
         self.grid = grid
         self.cell_dims = (ynode_count - 1, xnode_count - 1)  # (rows, columns)
