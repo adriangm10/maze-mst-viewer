@@ -6,7 +6,7 @@ from time import sleep
 import pygame
 
 from maze import Maze
-from pathfinders import Bfs
+from pathfinders import Astar, Bfs, Dfs, manhattan_distance
 from utils import Algorithms, Button
 
 pygame.init()
@@ -54,6 +54,20 @@ def solve_bfs(maze: Maze):
     maze.set_path_finder(bfs)
 
 
+def solve_dfs(maze: Maze):
+    global state
+    state = State.SOLVING
+    bfs = Dfs(maze)
+    maze.set_path_finder(bfs)
+
+
+def solve_astar(maze: Maze):
+    global state
+    state = State.SOLVING
+    bfs = Astar(maze, manhattan_distance)
+    maze.set_path_finder(bfs)
+
+
 if __name__ == "__main__":
     running = True
     kruskal_button = Button(
@@ -92,11 +106,23 @@ if __name__ == "__main__":
         label="Restart",
         onClick=restart_maze,
     )
-    solve_button = Button(
+    bfs_button = Button(
         pygame.Rect(WIDTH / 2 + 50, 700, 100, 25),
         arial,
         label="Solve bfs",
         onClick=solve_bfs,
+    )
+    dfs_button = Button(
+        pygame.Rect(WIDTH / 2 + 200, 700, 100, 25),
+        arial,
+        label="Solve dfs",
+        onClick=solve_dfs,
+    )
+    astar_button = Button(
+        pygame.Rect(WIDTH / 2 + 200, 750, 100, 25),
+        arial,
+        label="Solve A*",
+        onClick=solve_astar,
     )
     maze = Maze(pygame.Rect(10, 10, WIDTH - 20, 500), 20, max_cost=1000)
 
@@ -106,12 +132,16 @@ if __name__ == "__main__":
                 running = False
 
         if not maze.is_fully_created() and not pause:
-            solve_button.set_active(False)
+            bfs_button.set_active(False)
+            dfs_button.set_active(False)
+            astar_button.set_active(False)
             maze.new_wall()
             sleep(0.001)
         else:
             if maze.generation_mode == Algorithms.PRIM_MAZE and maze.is_fully_created():
-                solve_button.set_active(True)
+                bfs_button.set_active(True)
+                dfs_button.set_active(True)
+                astar_button.set_active(True)
                 if state == State.SOLVING and not pause:
                     maze.solve_step()
                 maze.draw_solution(window)
@@ -123,7 +153,9 @@ if __name__ == "__main__":
         prim_button.process(maze, Algorithms.PRIM)
         boruvka_button.process(maze, Algorithms.BORUVKA)
         prim_maze_button.process(maze, Algorithms.PRIM_MAZE)
-        solve_button.process(maze)
+        bfs_button.process(maze)
+        dfs_button.process(maze)
+        astar_button.process(maze)
 
         maze.draw_maze(window)
         pause_button.draw(window)
@@ -132,9 +164,11 @@ if __name__ == "__main__":
         boruvka_button.draw(window)
         prim_button.draw(window)
         prim_maze_button.draw(window)
-        solve_button.draw(window)
-        pygame.display.update()
+        bfs_button.draw(window)
+        dfs_button.draw(window)
+        astar_button.draw(window)
 
+        pygame.display.update()
         window.fill((0, 0, 0))
 
     pygame.quit()
