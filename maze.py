@@ -3,7 +3,7 @@ from random import randint
 import pygame
 
 from generators import Boruvka, Generator, Kruskal, Prim, PrimMaze
-from utils import Algorithms
+from utils import Algorithms, PathFinder
 
 
 def generate_grid_graph(
@@ -54,8 +54,14 @@ class Maze:
         self.kruskal: Kruskal | None = None
         self.prim_maze: PrimMaze | None = None
         self.curr_alg: Generator = self.prim
+        self.generation_mode = Algorithms.PRIM
+
+        self.start = (0, 0)
+        self.target = (self.ynode_count - 2, self.xnode_count - 2)
+        self.path_finder: PathFinder | None = None
 
     def set_generation_mode(self, alg: Algorithms):
+        self.generation_mode = alg
         match alg:
             case Algorithms.PRIM:
                 if self.prim is None:
@@ -116,3 +122,52 @@ class Maze:
 
     def restart(self):
         self.curr_alg.restart()
+
+    def theres_wall(self, cell1: tuple[int, int], cell2: tuple[int, int]) -> bool:
+        assert isinstance(self.curr_alg, PrimMaze)
+
+        return self.curr_alg.theres_wall(cell1, cell2)
+
+    def next_cells(self, pos: tuple[int, int]) -> list[tuple[int, int]]:
+        moves = []
+
+        for move in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+            next_pos = pos[0] + move[0], pos[1] + move[1]
+            if next_pos[0] < 0 or next_pos[0] > self.ynode_count - 2:
+                continue
+
+            elif next_pos[1] < 0 or next_pos[1] > self.xnode_count - 2:
+                continue
+
+            if not self.theres_wall(pos, next_pos):
+                moves.append(next_pos)
+
+        return moves
+
+    def set_path_finder(self, path_finder: PathFinder):
+        self.path_finder = path_finder
+
+    # Makes a step in the path finder and draws the current state of the algorithm
+    def solve_step(self):
+        if self.generation_mode != Algorithms.PRIM_MAZE or not self.is_fully_created():
+            print("[WARNING] trying to solve an MST or a maze that is not finished")
+            return
+        if self.path_finder is None:
+            print("[WARNING] trying to solve a maze without setting self.path_finder")
+            return
+
+        if not self.path_finder.has_finished():
+            self.path_finder.next_step()
+
+    def draw_solution(self, surface: pygame.Surface):
+        if self.path_finder is None:
+            return
+
+        self.path_finder.draw(
+            surface,
+            self.xnode_count,
+            self.cell_size,
+            self.rect,
+            pygame.Color(255, 0, 0),
+            pygame.Color(0, 255, 0),
+        )

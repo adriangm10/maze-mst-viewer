@@ -27,12 +27,13 @@ class Generator:
     def draw(
         self,
         surface: pygame.Surface,
-        xcell_count: int,
+        xnode_count: int,
         cell_size: int,
         rect: pygame.Rect,
         color: pygame.Color,
     ):
         raise NotImplementedError
+
 
 class Prim(Generator):
     def __init__(self, graph: list[list[int]]):
@@ -66,7 +67,7 @@ class Prim(Generator):
     def draw(
         self,
         surface: pygame.Surface,
-        xcell_count: int,
+        xnode_count: int,
         cell_size: int,
         rect: pygame.Rect,
         color: pygame.Color,
@@ -75,12 +76,12 @@ class Prim(Generator):
             if v is None or not self.q[i]:
                 continue
             from_node = (
-                v % xcell_count * cell_size + rect.x,
-                v // xcell_count * cell_size + rect.y,
+                v % xnode_count * cell_size + rect.x,
+                v // xnode_count * cell_size + rect.y,
             )
             to_node = (
-                i % xcell_count * cell_size + rect.x,
-                i // xcell_count * cell_size + rect.y,
+                i % xnode_count * cell_size + rect.x,
+                i // xnode_count * cell_size + rect.y,
             )
             pygame.draw.line(surface, color, from_node, to_node)
 
@@ -127,19 +128,19 @@ class Kruskal(Generator):
     def draw(
         self,
         surface: pygame.Surface,
-        xcell_count: int,
+        xnode_count: int,
         cell_size: int,
         rect: pygame.Rect,
         color: pygame.Color,
     ):
         for i in self.selected_edges:
             from_node = (
-                i[0] % xcell_count * cell_size + rect.x,
-                i[0] // xcell_count * cell_size + rect.y,
+                i[0] % xnode_count * cell_size + rect.x,
+                i[0] // xnode_count * cell_size + rect.y,
             )
             to_node = (
-                i[1] % xcell_count * cell_size + rect.x,
-                i[1] // xcell_count * cell_size + rect.y,
+                i[1] % xnode_count * cell_size + rect.x,
+                i[1] // xnode_count * cell_size + rect.y,
             )
             pygame.draw.line(surface, color, from_node, to_node)
 
@@ -225,19 +226,19 @@ class Boruvka(Generator):
     def draw(
         self,
         surface: pygame.Surface,
-        xcell_count: int,
+        xnode_count: int,
         cell_size: int,
         rect: pygame.Rect,
         color: pygame.Color,
     ):
         for i in self.boruvka_walls:
             from_node = (
-                i[0] % xcell_count * cell_size + rect.x,
-                i[0] // xcell_count * cell_size + rect.y,
+                i[0] % xnode_count * cell_size + rect.x,
+                i[0] // xnode_count * cell_size + rect.y,
             )
             to_node = (
-                i[1] % xcell_count * cell_size + rect.x,
-                i[1] // xcell_count * cell_size + rect.y,
+                i[1] % xnode_count * cell_size + rect.x,
+                i[1] // xnode_count * cell_size + rect.y,
             )
             pygame.draw.line(surface, color, from_node, to_node)
 
@@ -318,19 +319,19 @@ class PrimMaze(Generator):
     def draw(
         self,
         surface: pygame.Surface,
-        xcell_count: int,
+        xnode_count: int,
         cell_size: int,
         rect: pygame.Rect,
         color: pygame.Color,
     ):
         for i in self.selected_walls:
             from_node = (
-                i[0] % xcell_count * cell_size + rect.x,
-                i[0] // xcell_count * cell_size + rect.y,
+                i[0] % xnode_count * cell_size + rect.x,
+                i[0] // xnode_count * cell_size + rect.y,
             )
             to_node = (
-                i[1] % xcell_count * cell_size + rect.x,
-                i[1] // xcell_count * cell_size + rect.y,
+                i[1] % xnode_count * cell_size + rect.x,
+                i[1] // xnode_count * cell_size + rect.y,
             )
             pygame.draw.line(surface, color, from_node, to_node)
 
@@ -340,3 +341,17 @@ class PrimMaze(Generator):
         self.selected_walls = self.grid_walls.copy()
         self.selected_walls.remove((0, 1))
         self.selected_walls.remove((len(self.grid) - 2, len(self.grid) - 1))
+
+    def theres_wall(self, cell1: tuple[int, int], cell2: tuple[int, int]) -> bool:
+        if cell1[1] == cell2[1]:
+            bottom = max(cell1[0], cell2[0])
+            n1 = bottom * self.xnode_count + cell1[1]
+            wall = n1, n1 + 1
+            return wall in self.selected_walls
+        else:
+            right = max(cell1[1], cell2[1])
+            wall = (
+                cell1[0] * self.xnode_count + right,
+                (cell1[0] + 1) * self.xnode_count + right,
+            )
+            return wall in self.selected_walls

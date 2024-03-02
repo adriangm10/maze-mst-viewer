@@ -11,6 +11,28 @@ class Algorithms(Enum):
     PRIM_MAZE = 3
 
 
+class PathFinder:
+    def next_step(self):
+        raise NotImplementedError
+
+    def has_finished(self):
+        raise NotImplementedError
+
+    def restart(self):
+        raise NotImplementedError
+
+    def draw(
+        self,
+        surface: pygame.Surface,
+        xnode_count: int,
+        cell_size: int,
+        rect: pygame.Rect,
+        visited_color: pygame.Color,
+        path_color: pygame.Color,
+    ):
+        raise NotImplementedError
+
+
 class Button:
     def __init__(
         self,
@@ -33,6 +55,10 @@ class Button:
         self.onClick = onClick
         self.was_clicked = False
         self.hovered = False
+        self.active = True
+
+    def set_active(self, active: bool):
+        self.active = active
 
     def draw(self, surface: pygame.Surface):
         pygame.draw.rect(
@@ -51,6 +77,9 @@ class Button:
         )
 
     def process(self, *args):
+        if not self.active:
+            return
+
         mouse = pygame.mouse.get_pos()
         if self.rect.collidepoint(mouse):
             self.hovered = True
