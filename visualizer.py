@@ -108,14 +108,14 @@ if __name__ == "__main__":
         if not maze.is_fully_created() and not pause:
             solve_button.set_active(False)
             maze.new_wall()
-            sleep(0.01)
+            sleep(0.001)
         else:
-            if maze.generation_mode == Algorithms.PRIM_MAZE:
+            if maze.generation_mode == Algorithms.PRIM_MAZE and maze.is_fully_created():
                 solve_button.set_active(True)
-                if state == State.SOLVING:
+                if state == State.SOLVING and not pause:
                     maze.solve_step()
-                    maze.draw_solution(window)
-                    sleep(0.01)
+                maze.draw_solution(window)
+                sleep(0.01)
 
         pause_button.process(pause_button)
         restart_button.process(maze)

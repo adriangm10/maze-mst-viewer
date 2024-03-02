@@ -122,6 +122,8 @@ class Maze:
 
     def restart(self):
         self.curr_alg.restart()
+        if self.path_finder is not None:
+            self.path_finder.restart()
 
     def theres_wall(self, cell1: tuple[int, int], cell2: tuple[int, int]) -> bool:
         assert isinstance(self.curr_alg, PrimMaze)
