@@ -34,24 +34,30 @@ class PathFinder:
 
 
 class Button:
+    """
+    possible options in colors:
+        "bg": background color,
+        "fg": foreground color,
+        "hover": color when mouse hover,
+        "border": border color,
+    """
+
     def __init__(
         self,
         rect: pygame.Rect,
         font: pygame.font.Font,
+        colors: dict[str, tuple[int, int, int]],
         label: str = "",
         border_radius: int = -1,
         onClick: Callable | None = None,
-        colors: dict[str, tuple[int, int, int]] = {
-            "bg": (112, 128, 144),
-            "fg": (255, 255, 255),
-            "hover": (83, 104, 120),
-        },
+        border_width: int = 1,
     ):
         self.rect = rect
         self.label = label
         self.border_radius = border_radius
         self.font = font
-        self.colors = colors
+        self.colors = colors.copy()
+        self.border_width = border_width
         self.onClick = onClick
         self.was_clicked = False
         self.hovered = False
@@ -60,6 +66,30 @@ class Button:
     def set_active(self, active: bool):
         self.active = active
 
+    def set_border_color(self, color: tuple[int, int, int]):
+        self.colors["border"] = color
+
+    def set_bg_color(self, color: tuple[int, int, int]):
+        self.colors["bg"] = color
+
+    def set_fg_color(self, color: tuple[int, int, int]):
+        self.colors["fg"] = color
+
+    def set_hover_color(self, color: tuple[int, int, int]):
+        self.colors["hover"] = color
+
+    def get_border_color(self) -> tuple[int, int, int]:
+        return self.colors["border"]
+
+    def get_bg_color(self) -> tuple[int, int, int]:
+        return self.colors["bg"]
+
+    def get_fg_color(self) -> tuple[int, int, int]:
+        return self.colors["fg"]
+
+    def get_hover_color(self) -> tuple[int, int, int]:
+        return self.colors["hover"]
+
     def draw(self, surface: pygame.Surface):
         pygame.draw.rect(
             surface,
@@ -67,6 +97,7 @@ class Button:
             self.rect,
             border_radius=self.border_radius,
         )
+        pygame.draw.rect(surface, self.colors["border"], self.rect, self.border_width)
         label = self.font.render(self.label, True, self.colors["fg"])
         surface.blit(
             label,
@@ -87,7 +118,7 @@ class Button:
                 clicked := pygame.mouse.get_pressed(num_buttons=3)[0]
             ) and not self.was_clicked:
                 if self.onClick is not None:
-                    self.onClick(*args)
+                    self.onClick(self, *args)
                 self.was_clicked = True
             else:
                 self.was_clicked = clicked

@@ -170,6 +170,6 @@ class Maze:
             self.xnode_count,
             self.cell_size,
             self.rect,
-            pygame.Color(255, 0, 0),
-            pygame.Color(0, 255, 0),
+            pygame.Color(255, 18, 65),
+            pygame.Color(0, 205, 109),
         )
