@@ -7,8 +7,8 @@ import pygame
 
 from maze import Maze
 from pathfinders import Astar, Bfs, Dfs
-from widgets import Button, Scale
 from utils import Algorithms
+from widgets import Button, Scale
 
 pygame.init()
 
@@ -19,7 +19,7 @@ pause = False
 window = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("maze_generator")
 
-arial = pygame.font.SysFont("arial", 14)
+public_pixel = pygame.font.Font("fonts/PublicPixel-z84yD.ttf", 14)
 
 
 class State(Enum):
@@ -39,7 +39,7 @@ GREEN = (0, 255, 159)
 RED = (255, 18, 65)
 PINK = (234, 0, 217)
 
-MST_ALGS_POSX = 75
+MST_ALGS_POSX = 25
 MAZE_ALGS_POSX = 200
 PATHFINDER_POSX = 400
 SETTINGS_POSX = 600
@@ -94,23 +94,23 @@ def solve_astar(button: Button, maze: Maze):
 
 
 def draw_text():
-    mst = arial.render("MST algs", True, (255, 255, 255))
+    mst = public_pixel.render("MST", True, (255, 255, 255))
     window.blit(mst, (MST_ALGS_POSX, 550))
 
-    maze = arial.render("MAZE algs", True, (255, 255, 255))
+    maze = public_pixel.render("MAZE", True, (255, 255, 255))
     window.blit(maze, (MAZE_ALGS_POSX, 550))
 
-    pathfinders = arial.render("Pathfinders", True, (255, 255, 255))
+    pathfinders = public_pixel.render("Pathfinders", True, (255, 255, 255))
     window.blit(pathfinders, (PATHFINDER_POSX, 550))
 
-    settings = arial.render("Settings", True, (255, 255, 255))
+    settings = public_pixel.render("Settings", True, (255, 255, 255))
     window.blit(settings, (SETTINGS_POSX, 550))
 
-    change_size = arial.render("cell size", True, (255, 255, 255))
-    window.blit(change_size, (SETTINGS_POSX + 150, 570))
+    change_size = public_pixel.render("cell size", True, (255, 255, 255))
+    window.blit(change_size, (SETTINGS_POSX + 175, 570))
 
-    delay = arial.render("delay (s)", True, (255, 255, 255))
-    window.blit(delay, (SETTINGS_POSX + 150, 625))
+    delay = public_pixel.render("delay (s)", True, (255, 255, 255))
+    window.blit(delay, (SETTINGS_POSX + 175, 625))
 
 
 # To simulate pointers the maze is passed in a list
@@ -130,32 +130,32 @@ if __name__ == "__main__":
 
     # MST-Maze algorithms
     kruskal_button = Button(
-        pygame.Rect(MST_ALGS_POSX, 600, 100, 25),
-        arial,
+        pygame.Rect(MST_ALGS_POSX, 600, 150, 25),
+        public_pixel,
         button_colors,
         label="Kruskal",
         onClick=change_generation_alg,
     )
 
     prim_button = Button(
-        pygame.Rect(MST_ALGS_POSX, 650, 100, 25),
-        arial,
+        pygame.Rect(MST_ALGS_POSX, 650, 150, 25),
+        public_pixel,
         button_colors,
         label="Prim",
         onClick=change_generation_alg,
     )
 
     boruvka_button = Button(
-        pygame.Rect(MST_ALGS_POSX, 700, 100, 25),
-        arial,
+        pygame.Rect(MST_ALGS_POSX, 700, 150, 25),
+        public_pixel,
         button_colors,
         label="Boruvka",
         onClick=change_generation_alg,
     )
 
     prim_maze_button = Button(
-        pygame.Rect(MAZE_ALGS_POSX, 600, 100, 25),
-        arial,
+        pygame.Rect(MAZE_ALGS_POSX, 600, 150, 25),
+        public_pixel,
         button_colors,
         label="Prim Maze",
         onClick=change_generation_alg,
@@ -163,41 +163,41 @@ if __name__ == "__main__":
 
     # Pathfinding algorithms
     bfs_button = Button(
-        pygame.Rect(PATHFINDER_POSX, 600, 100, 25),
-        arial,
+        pygame.Rect(PATHFINDER_POSX, 600, 150, 25),
+        public_pixel,
         button_colors,
-        label="Solve bfs",
+        label="BFS",
         onClick=solve_bfs,
     )
 
     dfs_button = Button(
-        pygame.Rect(PATHFINDER_POSX, 650, 100, 25),
-        arial,
+        pygame.Rect(PATHFINDER_POSX, 650, 150, 25),
+        public_pixel,
         button_colors,
-        label="Solve dfs",
+        label="DFS",
         onClick=solve_dfs,
     )
 
     astar_button = Button(
-        pygame.Rect(PATHFINDER_POSX, 700, 100, 25),
-        arial,
+        pygame.Rect(PATHFINDER_POSX, 700, 150, 25),
+        public_pixel,
         button_colors,
-        label="Solve A*",
+        label="A*",
         onClick=solve_astar,
     )
 
     # Control buttons
     pause_button = Button(
-        pygame.Rect(SETTINGS_POSX, 600, 100, 25),
-        arial,
+        pygame.Rect(SETTINGS_POSX, 600, 150, 25),
+        public_pixel,
         button_colors,
         label="Pause",
         onClick=pause_continue,
     )
 
     restart_button = Button(
-        pygame.Rect(SETTINGS_POSX, 650, 100, 25),
-        arial,
+        pygame.Rect(SETTINGS_POSX, 650, 150, 25),
+        public_pixel,
         button_colors,
         label="Restart",
         onClick=restart_maze,
@@ -208,18 +208,24 @@ if __name__ == "__main__":
     cell_size = 20
 
     size_scale = Scale(
-        20, 50, 100, (SETTINGS_POSX + 150, 600), 7, arial, onClick=change_cell_size
+        20,
+        50,
+        100,
+        (SETTINGS_POSX + 175, 600),
+        7,
+        public_pixel,
+        onClick=change_cell_size,
     )
 
     delay_scale = Scale(
         0,
         0.1,
         100,
-        (SETTINGS_POSX + 150, 650),
+        (SETTINGS_POSX + 175, 650),
         7,
-        arial,
+        public_pixel,
         onClick=change_delay,
-        padding=17,
+        padding=23,
     )
 
     maze = Maze(
