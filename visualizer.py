@@ -7,7 +7,8 @@ import pygame
 
 from maze import Maze
 from pathfinders import Astar, Bfs, Dfs
-from utils import Algorithms, Button, Scale
+from widgets import Button, Scale
+from utils import Algorithms
 
 pygame.init()
 
