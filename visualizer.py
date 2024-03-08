@@ -105,8 +105,11 @@ def draw_text():
     settings = arial.render("Settings", True, (255, 255, 255))
     window.blit(settings, (SETTINGS_POSX, 550))
 
-    change_size = arial.render("Change size (pause to activate)", True, (255, 255, 255))
+    change_size = arial.render("cell size", True, (255, 255, 255))
     window.blit(change_size, (SETTINGS_POSX + 150, 570))
+
+    delay = arial.render("delay (s)", True, (255, 255, 255))
+    window.blit(delay, (SETTINGS_POSX + 150, 625))
 
 
 # To simulate pointers the maze is passed in a list
@@ -114,6 +117,11 @@ def change_cell_size(scale: Scale):
     global maze
     maze = Maze(maze.rect, int(scale.value), maze.max_cost, maze.color)
     maze.draw_grid_points(window)
+
+
+def change_delay(scale: Scale):
+    global delay
+    delay = scale.value
 
 
 if __name__ == "__main__":
@@ -202,9 +210,22 @@ if __name__ == "__main__":
         20, 50, 100, (SETTINGS_POSX + 150, 600), 7, arial, onClick=change_cell_size
     )
 
+    delay_scale = Scale(
+        0,
+        0.1,
+        100,
+        (SETTINGS_POSX + 150, 650),
+        7,
+        arial,
+        onClick=change_delay,
+        padding=17,
+    )
+
     maze = Maze(
         pygame.Rect(10, 10, WIDTH - 20, 500), int(size_scale.value), max_cost=1000
     )
+
+    delay = 0.1
 
     while running:
         for event in pygame.event.get():
@@ -216,7 +237,7 @@ if __name__ == "__main__":
             dfs_button.set_active(False)
             astar_button.set_active(False)
             maze.new_wall()
-            sleep(0.001)
+            sleep(delay)
         else:
             if maze.generation_mode == Algorithms.PRIM_MAZE and maze.is_fully_created():
                 bfs_button.set_active(True)
@@ -225,12 +246,7 @@ if __name__ == "__main__":
                 if state == State.SOLVING and not pause:
                     maze.solve_step()
                 maze.draw_solution(window)
-                sleep(0.01)
-
-        if pause:
-            size_scale.set_active(True)
-        else:
-            size_scale.set_active(False)
+                sleep(delay)
 
         match maze.generation_mode:
             case Algorithms.KRUSKAL:
@@ -271,7 +287,9 @@ if __name__ == "__main__":
         bfs_button.process(maze)
         dfs_button.process(maze)
         astar_button.process(maze)
+
         size_scale.process()
+        delay_scale.process()
 
         maze.draw_maze(window)
         pause_button.draw(window)
@@ -283,7 +301,9 @@ if __name__ == "__main__":
         bfs_button.draw(window)
         dfs_button.draw(window)
         astar_button.draw(window)
+
         size_scale.draw(window)
+        delay_scale.draw(window)
         draw_text()
 
         pygame.display.update()
