@@ -6,7 +6,7 @@ from time import sleep
 import pygame
 
 from maze import Maze
-from pathfinders import Astar, Bfs, Dfs, manhattan_distance
+from pathfinders import Astar, Bfs, Dfs
 from utils import Algorithms, Button
 
 pygame.init()
@@ -88,7 +88,7 @@ def solve_astar(button: Button, maze: Maze):
     button.set_border_color(PINK)
     bfs_button.set_border_color(button_colors["border"])
     dfs_button.set_border_color(button_colors["border"])
-    bfs = Astar(maze, manhattan_distance)
+    bfs = Astar(maze)
     maze.set_path_finder(bfs)
 
 

@@ -136,7 +136,7 @@ def euclidean_distance(x: tuple[int, int], y: tuple[int, int]) -> float:
 
 
 class Astar(PathFinder):
-    def __init__(self, maze: Maze, heuristic: Callable):
+    def __init__(self, maze: Maze, heuristic: Callable = manhattan_distance):
         self.maze = maze
         self.start = maze.start
         self.target = maze.target
