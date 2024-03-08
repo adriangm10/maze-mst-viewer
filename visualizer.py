@@ -228,11 +228,13 @@ if __name__ == "__main__":
         padding=23,
     )
 
+    delay_scale.set_value(0.02)
+
     maze = Maze(
         pygame.Rect(10, 10, WIDTH - 20, 500), int(size_scale.value), max_cost=1000
     )
 
-    delay = 0.1
+    delay = delay_scale.value
 
     while running:
         for event in pygame.event.get():

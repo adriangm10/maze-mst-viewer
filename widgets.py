@@ -1,5 +1,7 @@
 from typing import Callable
+
 import pygame
+
 
 class Button:
     """
@@ -162,6 +164,16 @@ class Scale:
 
     def set_line_color(self, color: tuple[int, int, int]):
         self.colors["line"] = color
+
+    def set_value(self, value):
+        assert value >= self.min_value and value <= self.max_value
+
+        self.value = value
+        self.scale = (value - self.min_value) / (self.max_value - self.min_value)
+        self.button_pos = (
+            self.pos[0] + self.size * self.scale + self.margin[0] + self.padding,
+            self.pos[1] + self.margin[1],
+        )
 
     def draw(self, surface: pygame.Surface):
         label = self.font.render(
