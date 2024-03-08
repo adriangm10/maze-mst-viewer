@@ -7,7 +7,7 @@ import pygame
 
 from maze import Maze
 from pathfinders import Astar, Bfs, Dfs
-from utils import Algorithms, Button
+from utils import Algorithms, Button, Scale
 
 pygame.init()
 
@@ -105,6 +105,16 @@ def draw_text():
     settings = arial.render("Settings", True, (255, 255, 255))
     window.blit(settings, (SETTINGS_POSX, 550))
 
+    change_size = arial.render("Change size (pause to activate)", True, (255, 255, 255))
+    window.blit(change_size, (SETTINGS_POSX + 150, 570))
+
+
+# To simulate pointers the maze is passed in a list
+def change_cell_size(scale: Scale):
+    global maze
+    maze = Maze(maze.rect, int(scale.value), maze.max_cost, maze.color)
+    maze.draw_grid_points(window)
+
 
 if __name__ == "__main__":
     running = True
@@ -186,7 +196,15 @@ if __name__ == "__main__":
     restart_button.set_hover_color(RED)
     restart_button.set_border_color(RED)
 
-    maze = Maze(pygame.Rect(10, 10, WIDTH - 20, 500), 20, max_cost=1000)
+    cell_size = 20
+
+    size_scale = Scale(
+        20, 50, 100, (SETTINGS_POSX + 150, 600), 7, arial, onClick=change_cell_size
+    )
+
+    maze = Maze(
+        pygame.Rect(10, 10, WIDTH - 20, 500), int(size_scale.value), max_cost=1000
+    )
 
     while running:
         for event in pygame.event.get():
@@ -208,6 +226,11 @@ if __name__ == "__main__":
                     maze.solve_step()
                 maze.draw_solution(window)
                 sleep(0.01)
+
+        if pause:
+            size_scale.set_active(True)
+        else:
+            size_scale.set_active(False)
 
         match maze.generation_mode:
             case Algorithms.KRUSKAL:
@@ -248,6 +271,7 @@ if __name__ == "__main__":
         bfs_button.process(maze)
         dfs_button.process(maze)
         astar_button.process(maze)
+        size_scale.process()
 
         maze.draw_maze(window)
         pause_button.draw(window)
@@ -259,6 +283,7 @@ if __name__ == "__main__":
         bfs_button.draw(window)
         dfs_button.draw(window)
         astar_button.draw(window)
+        size_scale.draw(window)
         draw_text()
 
         pygame.display.update()

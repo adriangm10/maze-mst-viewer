@@ -124,3 +124,120 @@ class Button:
                 self.was_clicked = clicked
         else:
             self.hovered = False
+
+
+class Scale:
+    def __init__(
+        self,
+        min_value: float,
+        max_value: float,
+        size: int,
+        pos: tuple[int, int],
+        button_size: float,
+        font: pygame.font.Font,
+        padding: float = 10,
+        onClick: Callable | None = None,
+        colors: dict[str, tuple[int, int, int]] = {
+            "fill": (0, 184, 255),
+            "line": (255, 255, 255),
+            "slider": (255, 255, 255),
+            "fg": (255, 255, 255),
+        },
+    ):
+        self.max_value = max_value
+        self.min_value = min_value
+        self.size = size
+        self.colors = colors
+        self.pos = pos
+        self.scale = 1
+        self.button_size = button_size
+        self.active = True
+        self.font = font
+        self.padding = padding
+        self.onClick = onClick
+
+        label = font.render(f"{self.max_value:.2f}", True, colors["fg"])
+        self.margin = label.get_width(), font.get_height() / 2
+        del label
+
+        self.button_pos = (
+            self.pos[0] + self.size * self.scale + self.margin[0] + self.padding,
+            self.pos[1] + self.margin[1],
+        )
+        self.line_rect = pygame.Rect(
+            self.pos[0] + self.margin[0] + self.padding,
+            self.pos[1],
+            self.size,
+            self.button_size * 2,
+        )
+
+        self.value = self.min_value + (self.max_value - self.min_value) * self.scale
+
+    def set_active(self, active: bool):
+        self.active = active
+
+    def set_slider_color(self, color: tuple[int, int, int]):
+        self.colors["slider"] = color
+
+    def set_fill_color(self, color: tuple[int, int, int]):
+        self.colors["fill"] = color
+
+    def set_line_color(self, color: tuple[int, int, int]):
+        self.colors["line"] = color
+
+    def draw(self, surface: pygame.Surface):
+        label = self.font.render(
+            f"{self.value:.2f}",
+            True,
+            self.colors["fg"],
+        )
+        surface.blit(label, self.pos)
+
+        pygame.draw.line(
+            surface,
+            self.colors["fill"],
+            (
+                self.pos[0] + label.get_width() + self.padding,
+                self.pos[1] + label.get_height() / 2,
+            ),
+            self.button_pos,
+        )
+
+        pygame.draw.line(
+            surface,
+            self.colors["line"],
+            self.button_pos,
+            (
+                self.pos[0] + self.size + label.get_width() + self.padding,
+                self.pos[1] + label.get_height() / 2,
+            ),
+        )
+
+        if self.active:
+            pygame.draw.circle(
+                surface, self.colors["slider"], self.button_pos, self.button_size
+            )
+        else:
+            pygame.draw.circle(
+                surface, (128, 128, 128), self.button_pos, self.button_size
+            )
+
+    def process(self, *args):
+        if not self.active:
+            return
+
+        mouse = pygame.mouse.get_pos()
+        if self.line_rect.collidepoint(mouse):
+            if pygame.mouse.get_pressed(num_buttons=3)[0]:
+                self.button_pos = mouse[0], self.button_pos[1]
+                self.scale = (
+                    self.button_pos[0] - self.pos[0] - self.padding - self.margin[0]
+                ) / self.size
+                self.value = (
+                    self.min_value + (self.max_value - self.min_value) * self.scale
+                )
+
+                if self.onClick is not None:
+                    self.onClick(self, *args)
+        else:
+            self.hovered = False
