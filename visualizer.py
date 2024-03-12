@@ -19,7 +19,7 @@ pause = False
 window = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("maze_generator")
 
-public_pixel = pygame.font.Font("fonts/PublicPixel-z84yD.ttf", 14)
+public_pixel_font = pygame.font.Font("fonts/PublicPixel-z84yD.ttf", 14)
 
 
 class State(Enum):
@@ -28,6 +28,8 @@ class State(Enum):
 
 
 state = State.CREATING
+drawing = False
+draw: list[tuple[int, int]] = []
 
 button_colors = {
     "bg": (0, 0, 0),
@@ -48,6 +50,10 @@ SETTINGS_POSX = 600
 def pause_continue(button: Button):
     global pause
     pause = not pause
+    if pause:
+        pause_button.set_border_color(RED)
+    else:
+        pause_button.set_border_color(button_colors["border"])
     button.label = "Pause" if not pause else "Continue"
 
 
@@ -93,23 +99,36 @@ def solve_astar(button: Button, maze: Maze):
     maze.set_path_finder(bfs)
 
 
+def state_drawing(button: Button):
+    global drawing
+
+    drawing = not drawing
+    if drawing:
+        button.set_border_color(GREEN)
+        button.label = "Stop"
+    else:
+        draw_button.set_border_color(button_colors["border"])
+        draw_button.label = "Draw"
+        draw.clear()
+
+
 def draw_text():
-    mst = public_pixel.render("MST", True, (255, 255, 255))
+    mst = public_pixel_font.render("MST", True, (255, 255, 255))
     window.blit(mst, (MST_ALGS_POSX, 550))
 
-    maze = public_pixel.render("MAZE", True, (255, 255, 255))
+    maze = public_pixel_font.render("MAZE", True, (255, 255, 255))
     window.blit(maze, (MAZE_ALGS_POSX, 550))
 
-    pathfinders = public_pixel.render("Pathfinders", True, (255, 255, 255))
+    pathfinders = public_pixel_font.render("Pathfinders", True, (255, 255, 255))
     window.blit(pathfinders, (PATHFINDER_POSX, 550))
 
-    settings = public_pixel.render("Settings", True, (255, 255, 255))
+    settings = public_pixel_font.render("Settings", True, (255, 255, 255))
     window.blit(settings, (SETTINGS_POSX, 550))
 
-    change_size = public_pixel.render("cell size", True, (255, 255, 255))
+    change_size = public_pixel_font.render("cell size", True, (255, 255, 255))
     window.blit(change_size, (SETTINGS_POSX + 175, 570))
 
-    delay = public_pixel.render("delay (s)", True, (255, 255, 255))
+    delay = public_pixel_font.render("delay (s)", True, (255, 255, 255))
     window.blit(delay, (SETTINGS_POSX + 175, 625))
 
 
@@ -131,7 +150,7 @@ if __name__ == "__main__":
     # MST-Maze algorithms
     kruskal_button = Button(
         pygame.Rect(MST_ALGS_POSX, 600, 150, 25),
-        public_pixel,
+        public_pixel_font,
         button_colors,
         label="Kruskal",
         onClick=change_generation_alg,
@@ -139,7 +158,7 @@ if __name__ == "__main__":
 
     prim_button = Button(
         pygame.Rect(MST_ALGS_POSX, 650, 150, 25),
-        public_pixel,
+        public_pixel_font,
         button_colors,
         label="Prim",
         onClick=change_generation_alg,
@@ -147,7 +166,7 @@ if __name__ == "__main__":
 
     boruvka_button = Button(
         pygame.Rect(MST_ALGS_POSX, 700, 150, 25),
-        public_pixel,
+        public_pixel_font,
         button_colors,
         label="Boruvka",
         onClick=change_generation_alg,
@@ -155,7 +174,7 @@ if __name__ == "__main__":
 
     prim_maze_button = Button(
         pygame.Rect(MAZE_ALGS_POSX, 600, 150, 25),
-        public_pixel,
+        public_pixel_font,
         button_colors,
         label="Prim Maze",
         onClick=change_generation_alg,
@@ -164,7 +183,7 @@ if __name__ == "__main__":
     # Pathfinding algorithms
     bfs_button = Button(
         pygame.Rect(PATHFINDER_POSX, 600, 150, 25),
-        public_pixel,
+        public_pixel_font,
         button_colors,
         label="BFS",
         onClick=solve_bfs,
@@ -172,7 +191,7 @@ if __name__ == "__main__":
 
     dfs_button = Button(
         pygame.Rect(PATHFINDER_POSX, 650, 150, 25),
-        public_pixel,
+        public_pixel_font,
         button_colors,
         label="DFS",
         onClick=solve_dfs,
@@ -180,7 +199,7 @@ if __name__ == "__main__":
 
     astar_button = Button(
         pygame.Rect(PATHFINDER_POSX, 700, 150, 25),
-        public_pixel,
+        public_pixel_font,
         button_colors,
         label="A*",
         onClick=solve_astar,
@@ -189,7 +208,7 @@ if __name__ == "__main__":
     # Control buttons
     pause_button = Button(
         pygame.Rect(SETTINGS_POSX, 600, 150, 25),
-        public_pixel,
+        public_pixel_font,
         button_colors,
         label="Pause",
         onClick=pause_continue,
@@ -197,7 +216,7 @@ if __name__ == "__main__":
 
     restart_button = Button(
         pygame.Rect(SETTINGS_POSX, 650, 150, 25),
-        public_pixel,
+        public_pixel_font,
         button_colors,
         label="Restart",
         onClick=restart_maze,
@@ -205,7 +224,13 @@ if __name__ == "__main__":
     restart_button.set_hover_color(RED)
     restart_button.set_border_color(RED)
 
-    cell_size = 20
+    draw_button = Button(
+        pygame.Rect(SETTINGS_POSX, 700, 150, 25),
+        public_pixel_font,
+        button_colors,
+        label="Draw",
+        onClick=state_drawing,
+    )
 
     size_scale = Scale(
         20,
@@ -213,7 +238,7 @@ if __name__ == "__main__":
         100,
         (SETTINGS_POSX + 175, 600),
         7,
-        public_pixel,
+        public_pixel_font,
         onClick=change_cell_size,
     )
 
@@ -223,7 +248,7 @@ if __name__ == "__main__":
         100,
         (SETTINGS_POSX + 175, 650),
         7,
-        public_pixel,
+        public_pixel_font,
         onClick=change_delay,
         padding=23,
     )
@@ -241,21 +266,48 @@ if __name__ == "__main__":
             if event.type == pygame.QUIT:
                 running = False
 
+        if drawing:
+            mouse_pos = pygame.mouse.get_pos()
+            if maze.rect.collidepoint(mouse_pos):
+                if clicked := pygame.mouse.get_pressed(num_buttons=3)[0]:
+                    x = (
+                        mouse_pos[0] - maze.rect.x
+                    ) // maze.cell_size * maze.cell_size + maze.rect.x
+                    y = (
+                        mouse_pos[1] - maze.rect.y
+                    ) // maze.cell_size * maze.cell_size + maze.rect.y
+                    draw.append((x, y))
+                if clicked := pygame.mouse.get_pressed(num_buttons=3)[2]:
+                    x = (
+                        mouse_pos[0] - maze.rect.x
+                    ) // maze.cell_size * maze.cell_size + maze.rect.x
+                    y = (
+                        mouse_pos[1] - maze.rect.y
+                    ) // maze.cell_size * maze.cell_size + maze.rect.y
+                    try:
+                        draw.remove((x, y))
+                    except ValueError:
+                        pass
+
+            for x, y in draw:
+                pygame.draw.rect(window, RED, (x, y, maze.cell_size, maze.cell_size))
+
         if not maze.is_fully_created() and not pause:
             bfs_button.set_active(False)
             dfs_button.set_active(False)
             astar_button.set_active(False)
+            draw_button.set_active(False)
             maze.new_wall()
             sleep(delay)
-        else:
-            if maze.generation_mode == Algorithms.PRIM_MAZE and maze.is_fully_created():
-                bfs_button.set_active(True)
-                dfs_button.set_active(True)
-                astar_button.set_active(True)
-                if state == State.SOLVING and not pause:
-                    maze.solve_step()
-                maze.draw_solution(window)
-                sleep(delay)
+        elif maze.generation_mode == Algorithms.PRIM_MAZE and maze.is_fully_created():
+            bfs_button.set_active(True)
+            dfs_button.set_active(True)
+            astar_button.set_active(True)
+            draw_button.set_active(True)
+            if state == State.SOLVING and not pause:
+                maze.solve_step()
+            maze.draw_solution(window)
+            sleep(delay)
 
         match maze.generation_mode:
             case Algorithms.KRUSKAL:
@@ -282,11 +334,6 @@ if __name__ == "__main__":
                 prim_button.set_border_color(button_colors["border"])
                 boruvka_button.set_border_color(button_colors["border"])
 
-        if pause:
-            pause_button.set_border_color(RED)
-        else:
-            pause_button.set_border_color(button_colors["border"])
-
         pause_button.process()
         restart_button.process(maze)
         kruskal_button.process(maze, Algorithms.KRUSKAL)
@@ -296,6 +343,7 @@ if __name__ == "__main__":
         bfs_button.process(maze)
         dfs_button.process(maze)
         astar_button.process(maze)
+        draw_button.process()
 
         size_scale.process()
         delay_scale.process()
@@ -310,6 +358,7 @@ if __name__ == "__main__":
         bfs_button.draw(window)
         dfs_button.draw(window)
         astar_button.draw(window)
+        draw_button.draw(window)
 
         size_scale.draw(window)
         delay_scale.draw(window)
