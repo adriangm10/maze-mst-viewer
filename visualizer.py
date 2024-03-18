@@ -29,7 +29,7 @@ class State(Enum):
 
 state = State.CREATING
 drawing = False
-draw: list[tuple[int, int]] = []
+draw: set[tuple[int, int]] = set()
 
 button_colors = {
     "bg": (0, 0, 0),
@@ -57,13 +57,13 @@ def pause_continue(button: Button):
     button.label = "Pause" if not pause else "Continue"
 
 
-def restart_maze(button: Button, maze: Maze):
+def restart_maze(_: Button, maze: Maze):
     global state
     state = State.CREATING
     maze.restart()
 
 
-def change_generation_alg(button: Button, maze: Maze, alg: Algorithms):
+def change_generation_alg(_: Button, maze: Maze, alg: Algorithms):
     global state
     state = State.CREATING
     maze.set_generation_mode(alg)
@@ -269,15 +269,15 @@ if __name__ == "__main__":
         if drawing:
             mouse_pos = pygame.mouse.get_pos()
             if maze.rect.collidepoint(mouse_pos):
-                if clicked := pygame.mouse.get_pressed(num_buttons=3)[0]:
+                if pygame.mouse.get_pressed(num_buttons=3)[0]:
                     x = (
                         mouse_pos[0] - maze.rect.x
                     ) // maze.cell_size * maze.cell_size + maze.rect.x
                     y = (
                         mouse_pos[1] - maze.rect.y
                     ) // maze.cell_size * maze.cell_size + maze.rect.y
-                    draw.append((x, y))
-                if clicked := pygame.mouse.get_pressed(num_buttons=3)[2]:
+                    draw.add((x, y))
+                elif pygame.mouse.get_pressed(num_buttons=3)[2]:
                     x = (
                         mouse_pos[0] - maze.rect.x
                     ) // maze.cell_size * maze.cell_size + maze.rect.x
@@ -286,7 +286,7 @@ if __name__ == "__main__":
                     ) // maze.cell_size * maze.cell_size + maze.rect.y
                     try:
                         draw.remove((x, y))
-                    except ValueError:
+                    except KeyError:
                         pass
 
             for x, y in draw:
